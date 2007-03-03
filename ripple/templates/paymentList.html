@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}{{SERVICE_NAME|escape}} - Payments{% endblock %}
+{% block content %}
+
+<h3>Payments</h3>
+{% include "info.html" %}
+<p><a href="/paymentForm/">Click here to pay another Ripple user.</a></p>
+{% if payments %}
+{% include "paymentChart.html" %}
+{% else %}
+<p><i>No payments made or received.</i></p>
+{% endif %}
+<p><a href="/summary/">Back to Summary</a></p>
+
+{% endblock %}
