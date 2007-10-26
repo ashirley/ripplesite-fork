@@ -34,34 +34,34 @@ function generate
 - nodes are numbered 0..n-1
 - returns a list of pairs of nodes representing connections
 - args: nodes = number of nodes desired
-    avg_conn = target average # of connections per node
-    pref_coeff = a number between 0 and 1,
-      weight of preferential selection vs. uniform 
-      (alpha in Pennock et al.)
+        avg_conn = target average # of connections per node
+        pref_coeff = a number between 0 and 1,
+            weight of preferential selection vs. uniform 
+            (alpha in Pennock et al.)
 """
 def generate( nodes, avg_conn, pref_coeff, seed=None ):
-  conn = nodes * [0]
-  conn[0] = conn[1] = 1
-  edges = [(1,0)]
-  avg = (float(avg_conn) / 4) + (1.6 * (1 - pref_coeff))
-  if seed:
-    random.seed(seed)
-  
-  for t in range( 2, nodes ):
-    #print t, "\r",
-    for i in range( t ):
-      p = float( 1 - pref_coeff ) / (t + 1)
-      if len( edges ) != 0:
-        p = p + (float( pref_coeff ) * conn[i] / len( edges ))
-      p = p * avg
-      if random.random() < p:
-        edges.append( (t, i) )
-        conn[t] += 1
-        conn[i] += 1
-  printStats( conn )
-  return edges
+    conn = nodes * [0]
+    conn[0] = conn[1] = 1
+    edges = [(1,0)]
+    avg = (float(avg_conn) / 4) + (1.6 * (1 - pref_coeff))
+    if seed:
+        random.seed(seed)
+    
+    for t in range( 2, nodes ):
+        #print t, "\r",
+        for i in range( t ):
+            p = float( 1 - pref_coeff ) / (t + 1)
+            if len( edges ) != 0:
+                p = p + (float( pref_coeff ) * conn[i] / len( edges ))
+            p = p * avg
+            if random.random() < p:
+                edges.append( (t, i) )
+                conn[t] += 1
+                conn[i] += 1
+    printStats( conn )
+    return edges
 
 def printStats( conn ):
-  for i in range( 0, max(conn) + 1 ):
-    print "Nodes with", i, "connections:", len( filter( lambda x: x == i, conn ) ) 
-  print "\nAverage connections:", float( sum(conn) ) / len(conn)
+    for i in range( 0, max(conn) + 1 ):
+        print "Nodes with", i, "connections:", len( filter( lambda x: x == i, conn ) ) 
+    print "\nAverage connections:", float( sum(conn) ) / len(conn)
