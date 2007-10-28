@@ -46,19 +46,19 @@ RippleSite server.
 Installation 
 ------------ 
 
-RippleSite 0.2 works on the Django Python web application framework 
-version 0.91 (the code must be changed to work with 0.95 and higher, 
-which anyone is welcome to do and share -- it's not hard), which can be 
-downloaded from http://www.djangoproject.com/download/0.91/tarball/. 
-More information about installing Django can be found at 
-http://www.djangoproject.com/documentation/0_91/install/. In particular, 
+RippleSite 0.3 works on the Django Python web application framework 
+version 0.95, which can be downloaded from 
+http://www.djangoproject.com/download/0.95.2/tarball/. More information 
+about installing Django can be found at 
+http://www.djangoproject.com/documentation/0.95/install/. In particular, 
 RippleSite requires the following software: 
 
 * Python 2.3 or higher (tested on 2.4) 
 * Apache + mod_python (tested on Apache 2.0 -- may be configured for 
-lighttpd + fast_cgi, not tested) 
+lighttpd + fast_cgi, not tested), although you can run the django
+development server to try it out first
 * PostgreSQL (tested on 8.0 and 8.1 -- may be configured to work on MySQL 
-or sqlite3) 
+or sqlite3, not tested) 
 
 The Django project website has a terrific tutorial that anyone 
 installing RippleSite should go through. 
@@ -74,17 +74,10 @@ RippleSite. Make sure all of these fields are set in your settings.py.
 You will have to have created a database in PostgreSQL before you can
 enter the database settings.
 
-3. Run 'python manage.py init' to initialize the database for Django. 
-
-Run 'python manage.py install ripple' and 'python manage.py install 
-admin' to install the ripple and admin apps. 
-
-Run 'python manage.py createsuperuser' to create a super user for the 
-admin app. 
-
-(Optionally run 'python manage.py sqlindexes ripple' to output the SQL 
-statements for creating database indexes -- copy or pipe these into psql 
-to actually create your indexes.) 
+3. Run 'python manage.py syncdb' to initialize the database. (Optionally
+run 'python manage.py sqlindexes ripple' to output the SQL statements for
+creating database indexes -- copy or pipe these into psql to actually 
+create your indexes.) 
 
 4. Configure Apache. There are many ways to do this, but one way is to 
 put something like the following in httpd.conf: 
@@ -164,10 +157,8 @@ Ideas for Improvements
 If you feel like improving the code, here are some ideas for things to 
 work on: 
 
-* get it working with Django 0.95 or higher 
 * improve the site design and layout (I'm not a web designer)
 * write an installation script 
-* integrate a buy & sell forum into the site 
 * integrate admin-driven news items into the front page 
 * paginate payment history in both account and payment views 
 * allow user to request payment from other users 

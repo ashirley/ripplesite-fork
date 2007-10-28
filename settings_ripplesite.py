@@ -32,11 +32,12 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.sites',  
     'ripplesite.ripple',
+    'ripplesite.market',
     'django.contrib.admin',
 )
 
 # for sending out automated email messages
-EMAIL_HOST = ''
+EMAIL_HOST = '' # set to 'TEST_DEBUG' to fake it
 EMAIL_HOST_USER = '' # leave blank if not required by host
 EMAIL_HOST_PASSWORD = '' # leave blank if not required by host
 
