@@ -296,17 +296,17 @@ def sendEmail(subject, msg, recipient, sender=None, attempts=3, includeServiceNa
         sender = '"%s" <%s>' % settings.ADMINS[0]
     if includeServiceName:
         subject = '%s - %s' % (settings.SERVICE_NAME, subject)
-    if not getattr(settings, 'EMAIL_HOST', None):
+    if settings.EMAIL_HOST == 'TEST_DEBUG':
         print "EMAIL_HOST not set.  Cannot send the following email:"
         print "To: %s" % recipient
         print "From: %s" % sender
         print "Subject: %s" % subject
         print "-----------"
         print msg
+        return True  # pretend
     while attempts > 0:
         try:
-            if send_mail(subject, msg, sender, (recipient,)) == 1:
-            	return True
+            return send_mail(subject, msg, sender, (recipient,))
         except (SMTPException, gaierror):
             attempts -= 1
     return False

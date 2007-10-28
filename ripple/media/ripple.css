@@ -163,7 +163,7 @@ p
   background-color: #f4f2d0;
 }
 
-input, textarea, .even td
+input, textarea, .even td, .ad-text
 {
   background-color: #faf9f0;
 }
@@ -238,6 +238,13 @@ a:hover
 
 .button
 {
-    background-color:#006666;
-    color:white;
+  background-color:#006666;
+  color:white;
+}
+
+.ad-text
+{
+  margin: 20px;
+  padding: 10px;
+  border: 1px solid #006666;
 }
