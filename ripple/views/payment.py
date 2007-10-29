@@ -131,7 +131,10 @@ def paymentForm(request, pmtId=None, otherUserId=None, is_request=False):
             pmt.save()
 
             if is_request:
-                # *** todo: Send payment request email
+                # Send payment request email
+                t = template_loader.get_template('emailPmtRequestReceived.txt')
+                c = RequestContext(request, {'req': pmt})
+                sendEmail("Payment request notification", t.render(c), pmt.payer_email)
                 request.session['infos'] = ["Your payment request has been recorded "
                                             "and a notification email sent to the payer."]
                 return HttpResponseRedirect('/payments/')
@@ -303,6 +306,10 @@ def cancelPayment(request, pmtId):
     if pmt.status == 'RQ':
         pmt.status = 'RF'  # refused
         # *** todo: Send refusal email to requester.
+        t = template_loader.get_template('emailPmtRequestRefused.txt')
+        c = RequestContext(request, {'req': pmt})
+        sendEmail("Payment request refusal notification", t.render(c),
+                  pmt.recipient.getPrimaryEmail())
     else:
         pmt.status = 'CA'  # cancelled
     pmt.save()
