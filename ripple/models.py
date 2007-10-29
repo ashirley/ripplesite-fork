@@ -193,10 +193,11 @@ class Offer(models.Model):
     recipient_email = models.CharField(maxlength=50)
     amount = models.FloatField(max_digits=DIGITS, decimal_places=DECIMALS)
     currency = models.ForeignKey(CurrencyUnit)
+    initial_balance = models.FloatField(max_digits=DIGITS, decimal_places=DECIMALS, default=0.0)
     interest_rate = models.FloatField(max_digits=13, decimal_places=8) # stored as percentage, 2 fewer decimals
 
     class Admin:
-        list_display = ('initiator', 'recipient_email', 'amount', 'currency')
+        list_display = ('initiator', 'recipient_email', 'amount', 'currency', 'initial_balance')
         list_filter = ('currency',)
         search_fields = ('initiator__name', 'initiator__username', 'recipient_email')
 
@@ -206,9 +207,11 @@ class Offer(models.Model):
 
 # payments ---------------------------
 PAYMENT_STATUS_CHOICES = (
+    ('RQ', 'Requested'),
     ('PE', 'Pending'),
     ('OK', 'Completed'),
     ('CA', 'Cancelled'),
+    ('RF', 'Refused'),
     ('FA', 'Failed'),
 )
 

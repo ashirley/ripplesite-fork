@@ -28,6 +28,8 @@ To Do:
 #todo: use Django's db connection for transactions?
 """
 
+from datetime import datetime
+
 from django.core import template_loader
 from django.template import RequestContext
 from django.http import HttpResponseRedirect
@@ -43,16 +45,7 @@ import routing
 import psycopg as db_module # *** change 'psycopg' to 'MySQLdb' for MySQL
 
 from pathgraph import PathGraph, computeInterest
-
-DSN = 'dbname=%s' % settings.DATABASE_NAME
-if settings.DATABASE_USER:
-    DSN += ' user=%s' % settings.DATABASE_USER
-if settings.DATABASE_PASSWORD:
-    DSN += ' password=%s' % settings.DATABASE_PASSWORD
-if settings.DATABASE_HOST:
-    DSN += ' host=%s' % settings.DATABASE_HOST
-if settings.DATABASE_PORT:
-    DSN += ' port=%s' % settings.DATABASE_PORT
+from dbconnect import DSN
 
 VERBOSE = settings.DEBUG
 
@@ -61,7 +54,7 @@ NO_PATH, TX_COLLISION, OVERPAYMENT, DB_ERROR, LINK_INSERT_FAILED, BAL_UPDATE_FAI
 
 #------------- Django views ----------------------------
 
-def paymentForm(request, pmtId=None, recipientId=None):
+def paymentForm(request, pmtId=None, otherUserId=None, is_request=False):
     userNode = checkLogin(request)
     if not userNode: return HttpResponseRedirect('/login/?redirect=%s' % request.path)
     errors = []
@@ -71,12 +64,14 @@ def paymentForm(request, pmtId=None, recipientId=None):
         email = request.POST['email']
         d['email'] = email # for maintaining form value in case of error
         if EmailAddr.objects.filter(email=email, confirmed=True).count() == 0:
-            errors.append("Email '%s' does not belong to any Ripple user, or has not yet been confirmed." % escape(email))
+            errors.append("Email '%s' does not belong to any Ripple user,"
+                          "or has not yet been confirmed." % escape(email))
         else:
-            recipEmailAddr = EmailAddr.objects.get(email=email)
-            recipient = recipEmailAddr.node
-            if recipient == userNode:
-                errors.append("You can't pay yourself.")
+            emailAddr = EmailAddr.objects.get(email=email)
+            otherUser = emailAddr.node
+            if otherUser == userNode:
+                action = is_request and 'request payment from' or 'pay'
+                errors.append("You can't %s yourself." % action)
         
         amountStr = request.POST['amount']
         d['amount'] = amountStr
@@ -95,15 +90,24 @@ def paymentForm(request, pmtId=None, recipientId=None):
         
         if not errors: 
             # check for enough credit
-            available = availableCredit(userNode, currency, incoming=False)
+            available = availableCredit(userNode, currency, incoming=is_request)
             if available < amount:
-                errors.append("You do not have enough available credit to make payment.  Available: %s %.2f." % (currency.short_name, available))
-            if availableCredit(recipient, currency, incoming=True) < amount:
-                errors.append("Your intended recipient has not offered enough credit to receive your payment.")
-        
+                action = is_request and 'request' or 'make'
+                errors.append("You do not have enough available credit to %s payment.  "
+                              "Available: %s %.2f." % (action, currency.short_name, available))
+            if availableCredit(otherUser, currency, incoming=not is_request) < amount:
+                if is_request:
+                    pass  # Other user might get more credit to fulfill request
+                else:
+                    errors.append("Your intended recipient has not offered enough credit "
+                                  "to receive your payment.")
+
+        pmt = None
         if request.POST['pmtId'] != 'None':
             pmt = Payment.objects.get(pk=request.POST['pmtId'])
-            if pmt.payer_id != userNode.id: # can't edit a payment that's not yours
+            # Check if user can edit
+            if (not is_request and pmt.payer_id != userNode.id) or \
+                    (is_request and pmt.recipient_id != userNode.id):
                 return HttpResponseRedirect('/payments/')
             if pmt.status == 'OK': # can't edit completed payment
                 d = {'message':'Payment has already been completed.', 'link':'/payments/'}
@@ -111,37 +115,61 @@ def paymentForm(request, pmtId=None, recipientId=None):
             d['pmtId'] = pmt.id # in case of errors, re-post pmtId
         
         if not errors: 
-            # move to payment confirm page
-            if request.POST['pmtId'] == 'None':
-                pmt = Payment(payer=userNode, payer_email=userNode.getPrimaryEmail(), recipient=recipient, recipient_email=email, amount=amount, currency=currency, status='PE', description=d['description'])
-            else:
-                pmt.recipient = recipient
-                pmt.recipient_email = email
-                pmt.amount = amount
-                pmt.currency = currency
-                pmt.status = 'PE'
-                pmt.description = d['description']
+            payer = is_request and otherUser or userNode
+            recipient = is_request and userNode or otherUser
+            if pmt is None:
+                pmt = Payment()  # Create new Payment.
+            pmt.payer = payer
+            pmt.payer_email = is_request and email or payer.getPrimaryEmail()
+            pmt.recipient = recipient
+            pmt.recipient_email = is_request and recipient.getPrimaryEmail() or email
+            pmt.amount = amount
+            pmt.currency = currency
+            pmt.date = datetime.now()
+            pmt.status = is_request and 'RQ' or 'PE'
+            pmt.description = d['description']
             pmt.save()
-            return HttpResponseRedirect('/payments/%s/confirm/' % pmt.id)
+
+            if is_request:
+                # *** todo: Send payment request email
+                request.session['infos'] = ["Your payment request has been recorded "
+                                            "and a notification email sent to the payer."]
+                return HttpResponseRedirect('/payments/')
+            else:  # Go to payment confirmation page
+                return HttpResponseRedirect('/payments/%s/confirm/' % pmt.id)
     
     # present make payment form
     d['infos'] = errors
-    if recipientId: # paying a specific user - URL = payUser/id/
-        if Node.objects.filter(pk=recipientId).count() > 0 and userNode.id != recipientId:
-            d['email'] = Node.objects.get(pk=recipientId).getPrimaryEmail()
+    if otherUserId: # paying a specific user - URL = payUser/id/
+        if Node.objects.filter(pk=otherUserId).count() > 0 and userNode.id != otherUserId:
+            d['email'] = Node.objects.get(pk=otherUserId).getPrimaryEmail()
     if pmtId: # editing a pending payment from DB - URL = paymentForm/id/
         if Payment.objects.filter(pk=pmtId).count() > 0:
             pmt = Payment.objects.get(pk=pmtId)
             if pmt.status == 'OK': # can't edit completed payment
                 d = {'message':'Payment has already been completed.', 'link':'/payments/'}
                 return render_to_response('error.html', d, context_instance=RequestContext(request))
-            d['email'] = pmt.recipient_email
+            d['email'] = is_request and pmt.payer_email or pmt.recipient_email
             d['amount'] = pmt.amount
             d['selectedUnitId'] = pmt.currency_id
             d['description'] = pmt.description
             d['pmtId'] = pmtId
     
-    # make units list
+    d['paymentUnits'] = makeUnitsList(userNode)
+    
+    # set selected units to account units, if paying account partner, or to default units
+    if not d.has_key('selectedUnitId'):
+        if otherUserId and userNode.account_set.filter(partner__pk=otherUserId).count() > 0:
+            acct = userNode.account_set.filter(partner__pk=otherUserId)[0]
+            d['selectedUnitId'] = acct.shared_data.currency_id
+        else:
+            d['selectedUnitId'] = userNode.display_units_id
+    
+    d['is_request'] = is_request
+    return render_to_response('paymentForm.html', d, context_instance=RequestContext(request))
+
+def makeUnitsList(userNode):
+    "Return list of CurrencyUnits available to user to pay/request with."
     accts = userNode.account_set.all()
     acctUnits = []
     for acct in accts:
@@ -164,18 +192,8 @@ def paymentForm(request, pmtId=None, recipientId=None):
         else:
             pmtUnits = acctUnits # no convertible accts, so can pay only in acct units
     else: # no conversions -> only account units
-        pmtUnits = acctUnits  
-    d['paymentUnits'] = pmtUnits
-    
-    # set selected units to account units, if paying account partner, or to default units
-    if not d.has_key('selectedUnitId'):
-        if recipientId and userNode.account_set.filter(partner__pk=recipientId).count() > 0:
-            acct = userNode.account_set.filter(partner__pk=recipientId)[0]
-            d['selectedUnitId'] = acct.shared_data.currency_id
-        else:
-            d['selectedUnitId'] = userNode.display_units_id
-    
-    return render_to_response('paymentForm.html', d, context_instance=RequestContext(request))
+        pmtUnits = acctUnits
+    return pmtUnits
 
 def availableCredit(node, unit, incoming=False):
     pmtCurrencyValue = unit.value
@@ -279,10 +297,15 @@ def cancelPayment(request, pmtId):
     if pmt.payer_id != userNode.id:
         return HttpResponseRedirect('/payments/')
     
-    if pmt.status != 'PE': # pending
+    if pmt.status not in ('RQ', 'PE'):  # requested, pending
         return HttpResponseRedirect('/payments/')
-    
-    pmt.delete()
+
+    if pmt.status == 'RQ':
+        pmt.status = 'RF'  # refused
+        # *** todo: Send refusal email to requester.
+    else:
+        pmt.status = 'CA'  # cancelled
+    pmt.save()
     request.session['infos'] = ["Payment cancelled."]
     return HttpResponseRedirect('/payments/')
     
@@ -307,6 +330,11 @@ def paymentList(request):
     d['userNode'] = userNode
     d['payments'] = Payment.objects.filter(Q(payer=userNode) | Q(recipient=userNode), status='OK').order_by('-date')
     prepPaymentsForDisplay(d['payments'], userNode)
+    d['receivedPaymentRequests'] = Payment.objects.filter(payer=userNode, status='RQ'
+                                                          ).order_by('-date')
+    d['sentPaymentRequests'] = Payment.objects.filter(recipient=userNode, status='RQ'
+                                                      ).order_by('-date')
+
     return render_to_response('paymentList.html', d, context_instance=RequestContext(request))
 
 # for each payment, calculate sign and current value as paid/received (if desired and possible)
@@ -382,6 +410,10 @@ def paymentDetail(request, pmtId):
     d['inAccts'] = inAccts
     d['outAccts'] = outAccts
     return render_to_response('paymentDetail.html', d, context_instance=RequestContext(request))
+
+def registerIOU(request, otherNodeId=None):
+    "For one-hop payments, including account offer and creation if necessary."
+    pass
 
 
 #-------------------- Backend functions -------------------

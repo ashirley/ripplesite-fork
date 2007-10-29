@@ -30,11 +30,11 @@ import psycopg as db_module # *** change 'psycopg' to 'MySQLdb' for MySQL
 from ripplesite.ripple.models import Node
 from django.conf import settings
 
+from dbconnect import DSN
+
 # using locations from -pi to pi on the unit circle
 # using integers over the full range was overflowing when casting to floats on some kleinberg calculations
 LOCATION_MAX = 3.1415926535897931
-DSN = 'dbname=%s user=%s password=%s' % (settings.DATABASE_NAME, settings.DATABASE_USER, settings.DATABASE_PASSWORD)
-
 
 def getDistance(pos1, pos2):
     dist = abs(pos1 - pos2)

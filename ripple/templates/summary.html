@@ -50,6 +50,21 @@ You may accept or reject invitations by clicking the links.</p>
 </table>
 {% endif %}
 
+{% if paymentRequests %}
+<table class="chart">
+  <tr class="spantitle"><td colspan="4">Payment requests received</td></tr>
+  <tr><th>Date</th><th>From</th><th>Amount</th><th>Action</th></tr>
+  {% for req in paymentRequests %}
+    <tr {% if forloop.counter|divisibleby:"2" %}class="even"{% endif %}>
+      <td>{{ req.date|date:"d M Y" }}</td>
+      <td>{{ req.recipient_email }}</td>
+      <td>{{ req.amount|myStrFormat:".2f" }}</td>
+      <td><a href="/payments/{{ req.id }}/edit/">review</a></td>
+    </tr>
+  {% endfor %}
+</table>
+{% endif %}
+
 <a name="offer"></a>
 <h4>Connect to more people</h4>
 <p>You must create connection accounts with others in order to send and receive payment.</p>
@@ -95,7 +110,8 @@ You may accept or reject invitations by clicking the links.</p>
 <h4>Recent payments</h4>
 
 {% if accountUnits %}
-<p><a href="/paymentForm/">Make a payment to another Ripple user.</a></p>
+<p><a href="/paymentForm/">Pay another user</a> | 
+  <a href="/requestPayment/">Request payment</a></p>
 {% endif %}
 
 {% if payments %}

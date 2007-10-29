@@ -95,9 +95,13 @@ def summary(request):
 
     # get recent payments list
     from payment import prepPaymentsForDisplay # do it here to avoid circular import problem
-    d['payments'] = Payment.objects.filter(Q(payer=userNode) | Q(recipient=userNode), status='OK'
-                                                                                  ).order_by('-date')[:4]
+    d['payments'] = Payment.objects.filter(Q(payer=userNode) | Q(recipient=userNode),
+                                           status='OK'
+                                           ).order_by('-date')[:4]
     prepPaymentsForDisplay(d['payments'], userNode)
+
+    d['paymentRequests'] = Payment.objects.filter(payer=userNode, status='RQ'
+                                                  ).order_by('-date')[:4]
 
     return render_to_response('summary.html', d, context_instance=RequestContext(request))
 

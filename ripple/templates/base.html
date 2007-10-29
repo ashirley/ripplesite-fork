@@ -15,15 +15,15 @@
 </div>
 
 <div id="titlemenu">
-  <a href="/" class="leftitem">Home</a><a href="/about/">About</a><a href="/faq/">FAQ</a><a href="/donate/">Donate</a><a href="/contact/">Contact</a>
+  <a href="/" class="leftitem">Home</a>|<a href="/about/">About</a>|<a href="/faq/">FAQ</a>|<a href="/donate/">Donate</a>|<a href="/contact/">Contact</a>
 </div>
 
 <div id="nodemenu">
   {% if userNode %}
   Logged in as: {{ userNode.username|escape}}
-  <a href="/summary/" class="leftitem">Summary</a><a href="/accounts/">Connections</a><a href="/payments/">Payments</a><a href="/market/">Marketplace</a><a href="/profile/">Profile</a><a href="/logout/">Log out</a>
+  |<a href="/summary/" class="leftitem">Summary</a>|<a href="/accounts/">Connections</a>|<a href="/payments/">Payments</a>|<a href="/market/">Marketplace</a>|<a href="/profile/">Profile</a>|<a href="/logout/">Log out</a>
   {% else %}
-  <a href="/login/" class="leftitem">Log in</a><a href="/register/">Sign up</a>
+  <a href="/login/" class="leftitem">Log in</a>|<a href="/register/">Sign up</a>
   {% endif %}
 </div>
 
@@ -35,7 +35,7 @@
 <hr id="pad"/>
 
 <div id="bottommenu">
-  <a href="/" class="leftitem">Home</a><a href="/about/">About</a><a href="/faq/">FAQ</a><a href="/donate/">Donate</a><a href="/contact/">Contact</a>
+  <a href="/" class="leftitem">Home</a>|<a href="/about/">About</a>|<a href="/faq/">FAQ</a>|<a href="/donate/">Donate</a>|<a href="/contact/">Contact</a>
 </div>
 
 </div>

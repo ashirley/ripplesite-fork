@@ -5,6 +5,7 @@
 
 <h3>Confirm Payment</h3>
 {% include "info.html" %}
+<p>Please confirm your payment details and only proceed if everything is correct.</p>
 <form action="/pay/{{pmt.id}}/" name="pay" method="post">
   <table>
     <tr><td>Recipient's Email</td><td>{{pmt.recipient_email|escape}}</td></tr>

@@ -1,6 +1,7 @@
 from django.conf.urls.defaults import *
 
-urlpatterns = patterns('ripplesite.ripple.views',
+urlpatterns = patterns(
+    'ripplesite.ripple.views',
     (r'^$', 'home'),
     (r'^login/?$', 'login'), # handles both GET and POST
     (r'^logout/?$', 'logout'),
@@ -22,13 +23,18 @@ urlpatterns = patterns('ripplesite.ripple.views',
     (r'^donate/?$', 'donate'),
     
     (r'^paymentForm/?$', 'payment.paymentForm'),
-    (r'^payUser/(?P<recipientId>\d+)/?$', 'payment.paymentForm'),
+    (r'^payUser/(?P<otherUserId>\d+)/?$', 'payment.paymentForm'),
     (r'^payments/(?P<pmtId>\d+)/confirm/?$', 'payment.confirmPayment'),
     (r'^pay/(?P<pmtId>\d+)/?$', 'payment.pay'),
     (r'^payments/?$', 'payment.paymentList'),
     (r'^payments/(?P<pmtId>\d+)/?$', 'payment.paymentDetail'),
     (r'^payments/(?P<pmtId>\d+)/edit/?$', 'payment.paymentForm'),
+    (r'^payments/(?P<pmtId>\d+)/editRequest/?$', 'payment.paymentForm', {'is_request': True}),
     (r'^payments/(?P<pmtId>\d+)/cancel/?$', 'payment.cancelPayment'),
+    (r'^requestPayment/?$', 'payment.paymentForm', {'is_request': True}),
+    (r'^requestPayment/(?P<otherUserId>\d+)/?$', 'payment.paymentForm', {'is_request': True}),
+    (r'^registerIOU/?$', 'payment.registerIOU'),
+    (r'^registerIOU/(\d+)/?$', 'payment.registerIOU'),
     
     (r'^accounts/?$', 'connection.accountList'),
     (r'^accounts/(?P<acctId>\d+)/?$', 'connection.accountDetail'),

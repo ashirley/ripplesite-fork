@@ -40,7 +40,8 @@ as change the name of the account and set credit limits for you and your connect
 
 {% if acct.shared_data.active %}
 
-<p><a href="/payUser/{{acct.partner_id}}/">Make a payment to this person</a></p>
+<p><a href="/payUser/{{acct.partner_id}}/">Pay this user</a> |
+  <a href="/requestPayment/{{ acct.partner_id }}/">Request payment from this user</a></p>
 {% if closeable %}
   <p><a href="/confirmClose/{{acct.id}}/">Close this account</a></p>
 {% else %}

@@ -12,7 +12,7 @@ body
   xbackground-color: #e0debf;
   color: black;
   font-family: verdana, arial, sans-serif;
-  font-size: 90%;
+  font-size: 75%;
 }
 
 #wrap
@@ -44,7 +44,7 @@ body
   xbackground-color: #7a0600;
   border-bottom: 1px solid #006666;
   border-top: 1px solid #006666;
-  padding: 10px 0;
+  padding: 5px 0;
   color: #f4f2d0;
   text-align: right;
 }
@@ -53,7 +53,7 @@ body
 {
   background-image: url(green-yellow-back.png);
   xbackground-color: #006666;
-  padding: 10px 0;
+  padding: 5px 0;
   text-align: left;
   text-align: center;
   color: #f4f2d0;
@@ -187,7 +187,7 @@ hr
   background-image: url(green-yellow-back.png);
   xbackground-color: #006666;
   text-align: center;
-  padding: 10px 0;
+  padding: 5px 0;
   color: #f4f2d0;
   bottom: 0;
   position: absolute;
@@ -209,14 +209,14 @@ a:hover
 #titlemenu a
 {
   color: #f4f2d0;
-  padding: 10px;
+  padding: 5px;
 }
 
 #nodemenu a, #bottommenu a
 {
   color: #f0e2a0;
   xcolor: #f4f2d0;
-  padding: 10px;
+  padding: 5px;
 }
 
 #title a:hover
