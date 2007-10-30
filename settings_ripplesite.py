@@ -5,10 +5,14 @@ ADMINS = (
     ('Your Name', 'your_email@domain.com'), # set your own name and email address - used for contact page etc.
 )
 
+# Absolute path to the directory that holds media.
+# Example: "/home/media/media.lawrence.com/"
+# Needed for ripplesite to display media when running on the django development server
+MEDIA_ROOT = ''
 
 # URL prefix for admin media -- CSS, JavaScript and images. Make sure to use a
 # trailing slash.
-# Examples: "http://foo.com/media/", "/media/".
+# Examples: "http://foo.com/media/admin/", "/media/admin/".
 ADMIN_MEDIA_PREFIX = ''  # something different than '/media/'
 
 MIDDLEWARE_CLASSES = (

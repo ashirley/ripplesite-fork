@@ -1,4 +1,5 @@
 from django.conf.urls.defaults import *
+from django.conf import settings
 
 urlpatterns = patterns(
     '',
@@ -8,5 +9,5 @@ urlpatterns = patterns(
     # Uncomment this for admin:
     (r'^admin/', include('django.contrib.admin.urls')),
     
-    (r'^media/(?P<path>.*)$', 'django.views.static.serve', {'document_root': '/home/ryan/projects/ripplesite/ripple/media'}),
+    (r'^media/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT}),
 )
