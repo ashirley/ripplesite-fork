@@ -39,12 +39,16 @@ from datetime import datetime, timedelta
 
 ERROR = 100e-12 # allowable rounding error on integrity checks
 
-def addNode(name):
-    node = Node(username=name, name="Node " + name, location=routing.getNewLocation())
-    node.setPwd(name)
+def addNode(username, realname, email=None, unit_name=None):
+    node = Node(username=username, name=realname.title(), location=routing.getNewLocation())
+    node.setPwd(username)
+    if unit_name:
+        node.display_units = getCurrency(unit_name)
     node.save()
-    email = EmailAddr(node=node, email="%s@r.com" % name, code=makeConfirmationCode(), confirmed=True, primary=True)
-    email.save()
+    if email is None:
+        email = "%s@r.com" % username
+    emailaddr = EmailAddr(node=node, email=email, code=makeConfirmationCode(), confirmed=True, primary=True)
+    emailaddr.save()
     return node
 
 def getNode(name):

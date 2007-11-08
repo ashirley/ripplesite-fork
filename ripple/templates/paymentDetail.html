@@ -42,7 +42,7 @@
 <table class="chart">
   {% if inAccts %}
   <tr class="spantitle"><td colspan="{% if convertibleUnits %}4{% else %}3{% endif %}">
-    Accounts receiving payment</td></tr>
+    Account{{ inAccts|pluralize:"s" }} receiving payment</td></tr>
   <tr><th>ID</th><th>Account name</th><th>Entry</th>
     {% if convertibleUnits %}<th>Converted to</th>{% endif %}</tr>
   {% for acct in inAccts %}
@@ -62,7 +62,7 @@
 
   {% if outAccts %}
   <tr class="spantitle"><td colspan="{% if convertibleUnits %}4{% else %}3{% endif %}">
-    Accounts sending payment</td></tr>
+    Account{{ outAccts|pluralize:"s" }} sending payment</td></tr>
   <tr><th>ID</th><th>Account name</th><th>Entry</th>
     {% if convertibleUnits %}<th>Converted to</th>{% endif %}</tr>
   {% for acct in outAccts %}

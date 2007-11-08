@@ -268,6 +268,7 @@ def pay(request, pmtId):
             sendPaymentEmails(pmt, request)
             break
         except PaymentError, e:
+            print e
             if e.retry and collisions > 0: # retry
                 collisions -= 1
             else: # quit
@@ -472,8 +473,8 @@ def performPayment(pmt, maxNodes):
             pathAmt = payAlongPath(path=path, amount=pmt.amount - paid, cursor=cursor, pmt=pmt)
             if VERBOSE: print "Paid along path, value %.2f." % pathAmt
             paid += pathAmt
-            if round(paid, 12) >= round(pmt.amount, 12):
-                if round(paid, 12) == round(pmt.amount, 12): # check rounded to twelve decimals
+            if round(paid, 12) >= round(pmt.amount, 12) - 5e-12:
+                if abs(round(paid, 12) - round(pmt.amount, 12)) < 5e-12: # check rounded to twelve decimals
                     break
                 else: # shouldn't happen ever!
                     raise PaymentError(code=OVERPAYMENT, message="*** Serious error. Paid too much! Target amount: %.12f, paid %.12f. Please contact system administrator. ***" % (paid, pmt.amount), retry=False, amountLacking=pmt.amount-paid) # amountLacking will be negative
@@ -524,7 +525,10 @@ def payAlongPath(path, amount, cursor, pmt):
         # calculate avail credit (in pmt units)
         acct.actual_balance = queryRow[BALANCE] * queryRow[MULTIPLIER]
         acct.last_update = queryRow[LAST_UPDATE]
+        # *** causing errors when only one simultaneous payment happening
+        #     this is because of django timezone setting -- unset it?  (works on windows)
         if acct.last_update > pmt.date: # can't properly compute interest if someone else already has since the time this payment was supposed to occur at
+            print acct.last_update, pmt.date
             raise PaymentError(code=TX_COLLISION, message="Another transaction updated this account since the time we wanted to pay at.", retry=True)
         acct.interest = computeInterest(acct.actual_balance, queryRow[INTEREST_RATE], acct.last_update, pmt.date)
         acct.eff_balance = acct.actual_balance + acct.interest
